@@ -7,6 +7,7 @@
 
 namespace vasSAT {
 using CNFRef = std::shared_ptr<vasSAT::CNFFormula>;
+using NNFRef = std::shared_ptr<vasSAT::NNFFormula>;
 
 class Parser {
 public:
