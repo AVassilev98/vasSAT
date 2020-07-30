@@ -6,11 +6,13 @@
 #include "vasSAT/CNFFormula.hpp"
 #include "vasSAT/FileUtils.hpp"
 
-std::shared_ptr<vasSAT::CNFFormula> parseCNFFile(const std::string &path) {
+namespace vasSAT {
+
+CNFRef Parser::parseCNFFile(const std::string &path) const {
 
   using namespace std;
 
-  auto formula = make_shared<vasSAT::CNFFormula>();
+  auto formula = make_unique<vasSAT::CNFFormula>();
 
   ifstream ifs;
   std::string line;
@@ -46,3 +48,4 @@ std::shared_ptr<vasSAT::CNFFormula> parseCNFFile(const std::string &path) {
     throw new invalid_argument("Could not open file: " + path);
   }
 }
+} // namespace vasSAT

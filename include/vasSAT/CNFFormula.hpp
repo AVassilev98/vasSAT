@@ -13,6 +13,8 @@ class CNFFormula {
   std::unordered_map<unsigned, unsigned> m_vars;
 
 public:
+  friend class Parser;
+
   CNFFormula() = default;
   ~CNFFormula() = default;
   CNFFormula(const CNFFormula &rhs) = delete;
