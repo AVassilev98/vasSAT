@@ -4,11 +4,14 @@
 #include <optional>
 #include <unordered_map>
 
+#include "vasSAT/CommonTypes.hpp"
+
 namespace vasSAT {
 
 class Parser;
 
 struct NNFData {
+  NodeType type;
   std::optional<unsigned> externalID;
   std::optional<unsigned> leftChild;
   std::optional<unsigned> rightChild;
@@ -16,7 +19,7 @@ struct NNFData {
 
 class NNFFormula {
 private:
-  NNFFormula();
+  NNFFormula() = default;
 
   // each node will be inserted by its internal ID
   std::unordered_map<unsigned, NNFData> m_nodes;
@@ -26,8 +29,10 @@ private:
   void checkNoCycles() const;
   void checkTerminates() const;
 
+  void inorder(unsigned elem, std::string &str) const;
+
   // returns the ID of the node you add
-  unsigned addNode(std::optional<unsigned> externalID);
+  unsigned addNode(std::optional<unsigned> externalID, NodeType type);
   void setLeft(unsigned curID, unsigned leftId);
   void setRight(unsigned curID, unsigned rightID);
 
@@ -35,5 +40,6 @@ public:
   friend class Parser;
 
   void printExternalToInternal(std::ostream &os) const;
+  void print(std::ostream &os) const;
 };
 } // namespace vasSAT

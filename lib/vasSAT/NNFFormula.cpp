@@ -5,8 +5,9 @@
 #include "vasSAT/NNFFormula.hpp"
 
 namespace vasSAT {
-unsigned NNFFormula::addNode(std::optional<unsigned> externalID) {
-  m_nodes.insert({m_id, {externalID}});
+unsigned NNFFormula::addNode(std::optional<unsigned> externalID,
+                             NodeType type) {
+  m_nodes.insert({m_id, {type, externalID}});
   ++m_id;
   return m_id - 1;
 }
@@ -48,6 +49,50 @@ void NNFFormula::checkNoCycles() const {
 
   assert(visited.size() == m_nodes.size() &&
          "Nodes exist outside of main tree!\n");
+}
+
+void NNFFormula::printExternalToInternal(std::ostream &os) const {
+  for (auto &elem : m_nodes) {
+    if (elem.second.externalID.has_value())
+      os << elem.second.externalID.value() << " ---> " << elem.first << "\n";
+  }
+  os.flush();
+}
+
+void NNFFormula::inorder(unsigned elem, std::string &str) const {
+  auto &data = m_nodes.find(elem)->second;
+  bool binaryNode = data.type == NodeType::AND || data.type == NodeType::OR;
+
+  if (data.leftChild.has_value()) { inorder(data.leftChild.value(), str); }
+  if (binaryNode) str = "(" + str + ")";
+
+  switch (data.type) {
+  case NodeType::LIT:
+    str.append(std::to_string(data.externalID.value()));
+    break;
+  case NodeType::AND:
+    str.append(" . ");
+    break;
+  case NodeType::OR:
+    str.append(" + ");
+    break;
+  case NodeType::NOT:
+    str.append(" -");
+    break;
+  default:
+    assert(0 && "Attempted to print unknown node type!");
+  }
+
+  if (data.rightChild.has_value()) { inorder(data.rightChild.value(), str); }
+
+  if (binaryNode) str = "(" + str + ")";
+}
+
+void NNFFormula::print(std::ostream &os) const {
+  std::string str;
+  inorder(m_rootID, str);
+
+  os << str << std::endl;
 }
 
 } // namespace vasSAT
