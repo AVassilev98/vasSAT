@@ -5,15 +5,12 @@
 
 #include "vasSAT/CNFFormula.hpp"
 #include "vasSAT/FileUtils.hpp"
-#include "vasSAT/NNFFormula.hpp"
 
-namespace vasSAT {
-
-CNFRef Parser::parseCNFFile(const std::string &path) const {
+std::shared_ptr<vasSAT::CNFFormula> parseCNFFile(const std::string &path) {
 
   using namespace std;
 
-  auto formula = make_unique<vasSAT::CNFFormula>();
+  auto formula = make_shared<vasSAT::CNFFormula>();
 
   ifstream ifs;
   std::string line;
@@ -28,13 +25,13 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
       for (unsigned i = 0; i < line.size(); ++i) {
         if (line[i] == ' ') continue;
         if (line[i] == '0')
-          throw new invalid_argument("Variables must start at one!: " + path);
+          std::cout << "Variables must start at one!: " << path << std::endl;
         if (i == 0 || line[i - 1] == ' ') {
           string::size_type sz = i;
           int var = stoi(line, &sz);
 
           if (var == 0)
-            throw new invalid_argument("Unkown symbol found!: " + path);
+            std::cout << "Unkown symbol found!: " << path << std::endl;
           else
             clause.push_back(var);
         }
@@ -46,15 +43,7 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
     return formula;
 
   } else {
-    throw new invalid_argument("Could not open file: " + path);
+    std::cout << "Could not read file: " << path << std::endl;
+    return formula;
   }
 }
-
-NNFRef Parser::parseNNfFile(const std::string &path) const {
-  auto f = new NNFFormula();
-  std::unique_ptr<NNFFormula> ret;
-  ret.reset(f);
-
-  return ret;
-}
-} // namespace vasSAT

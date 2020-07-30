@@ -1,5 +1,6 @@
 #include <cmath>
 #include <fstream>
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 
@@ -47,7 +48,8 @@ void CNFFormula::print(std::ostream &os) const {
 void CNFFormula::printToFile(std::string str) const {
   ofstream ofs(str);
   if (ofs.is_open()) print(ofs);
-  else
-    throw new invalid_argument("Unable to open destination file!");
+  else {
+    std::cout << "Unable to open destination file: " << str << endl;
+  }
 }
 } // namespace vasSAT
