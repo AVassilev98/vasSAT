@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "vasSAT/CommonTypes.hpp"
+
 namespace vasSAT {
 class CNFFormula;
 
@@ -34,8 +36,6 @@ struct NodeData {
   NodeRef nodeLeft;
   NodeRef nodeRight;
 };
-
-enum class NodeType { AND, OR, NOT, LIT };
 
 class Node {
 protected:
