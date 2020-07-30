@@ -1,12 +1,14 @@
 #pragma once
 
+#include <ostream>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace vasSAT {
 
 class CNFFormula {
-  int m_id = 0;
+  unsigned m_id = 0;
   std::vector<std::vector<unsigned>> m_clauses;
   std::unordered_map<unsigned, unsigned> m_vars;
 
@@ -20,8 +22,11 @@ public:
 
   void addClause(const std::vector<int> &lits);
   void addVar(int var);
-  bool hasVar(int var);
-  bool hasLit(int lit);
+  bool hasVar(int var) const;
+  bool hasLit(int lit) const;
+
+  void print(std::ostream &os) const;
+  void printToFile(std::string) const;
 };
 
 } // namespace vasSAT
