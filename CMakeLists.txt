@@ -28,6 +28,9 @@ set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to conform to")
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
+set(CMAKE_BUILD_TYPE Debug CACHE STRING
+"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE) 
+
 add_definitions(-Wno-redeclared-class-member)
 add_definitions(-Wno-sometimes-uninitialized)
 add_definitions(-Wno-deprecated-declarations)
