@@ -6,9 +6,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "vasSAT/CNFFormula.hpp"
-
 namespace vasSAT {
+class CNFFormula;
+
 class AbstractNodeDispatcher;
 class Node;
 class NodeData;

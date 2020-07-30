@@ -5,6 +5,7 @@
 
 #include "vasSAT/CNFFormula.hpp"
 #include "vasSAT/FileUtils.hpp"
+#include "vasSAT/NNFFormula.hpp"
 
 namespace vasSAT {
 
@@ -47,5 +48,13 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
   } else {
     throw new invalid_argument("Could not open file: " + path);
   }
+}
+
+NNFRef Parser::parseNNfFile(const std::string &path) const {
+  auto f = new NNFFormula();
+  std::unique_ptr<NNFFormula> ret;
+  ret.reset(f);
+
+  return ret;
 }
 } // namespace vasSAT

@@ -1,5 +1,6 @@
 #include <unordered_set>
 
+#include "vasSAT/CNFFormula.hpp"
 #include "vasSAT/DAG.hpp"
 
 using namespace vasSAT;

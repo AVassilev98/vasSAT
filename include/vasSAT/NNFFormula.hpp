@@ -1,8 +1,13 @@
+#pragma once
+
 #include <iostream>
 #include <optional>
 #include <unordered_map>
 
 namespace vasSAT {
+
+class Parser;
+
 struct NNFData {
   std::optional<unsigned> externalID;
   std::optional<unsigned> leftChild;
