@@ -10,7 +10,7 @@ std::shared_ptr<vasSAT::CNFFormula> parseCNFFile(const std::string &path) {
 
   using namespace std;
 
-  auto formula = make_shared<vasSAT::CNFFormula>();
+  auto formula = make_unique<vasSAT::CNFFormula>();
 
   ifstream ifs;
   std::string cnfLine;
