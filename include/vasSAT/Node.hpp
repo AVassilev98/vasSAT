@@ -113,7 +113,15 @@ public:
 };
 
 class LitNode : public Node {
+private:
+  int m_externalID = 0;
+
 public:
+  LitNode(int id, int depth, int externalID)
+      : Node(id, depth), m_externalID(externalID) {}
+
+  int getExternalID() { return m_externalID; }
+
   inline NodeType getType() const override { return NodeType::LIT; }
   void insertLeft(const NodeRef N) override {
     assert(0 && "Should not be inserting left on a LitNode!");
