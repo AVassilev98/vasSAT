@@ -18,7 +18,7 @@ void CNFFormula::addClause(const std::vector<int> &lits) {
     } else {
 
       bool negation = lit < 0;
-      m_vars[abs(lit)] = m_id;
+      m_vars.insert({abs(lit), m_id});
       if (negation) clause.push_back(m_id * 2 + 1);
       else
         clause.push_back(m_id * 2);
