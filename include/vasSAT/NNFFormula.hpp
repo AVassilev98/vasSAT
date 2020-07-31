@@ -4,11 +4,10 @@
 #include <optional>
 #include <unordered_map>
 
-#include "vasSAT/CommonTypes.hpp"
-
 namespace vasSAT {
 
 class Parser;
+enum class NodeType;
 
 struct NNFData {
   NodeType type;

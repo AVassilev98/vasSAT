@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "vasSAT/CommonTypes.hpp"
-
 namespace vasSAT {
 class CNFFormula;
 
@@ -21,6 +19,8 @@ class AndNode;
 class OrNode;
 class NotNode;
 class LitNode;
+
+enum class NodeType { AND, OR, NOT, LIT };
 
 class AbstractNodeDispatcher {
 public:
@@ -126,15 +126,4 @@ public:
     dispatcher.Dispatch(*this);
   }
 };
-
-class DAG {
-private:
-  CNFFormula m_formula;
-  NodeRef m_rootNode;
-  std::vector<NodeRef> m_nodes;
-  std::unordered_map<unsigned, NodeRef> m_heightMap;
-
-  void buildCNF();
-};
-
 } // namespace vasSAT

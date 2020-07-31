@@ -1,6 +1,6 @@
 #include "cxxopts/cxxopts.hpp"
 #include "vasSAT/CNFFormula.hpp"
-#include "vasSAT/DAG.hpp"
+#include "vasSAT/Node.hpp"
 
 int main(int argc, char *argv[]) {
   vasSAT::CNFFormula cnf;

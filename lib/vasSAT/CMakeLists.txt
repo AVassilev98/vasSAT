@@ -1,5 +1,5 @@
 add_library(vasSATLib STATIC
-    DAG.cpp
+    Node.cpp
     CNFFormula.cpp
     NNFFormula.cpp
     FileUtils.cpp

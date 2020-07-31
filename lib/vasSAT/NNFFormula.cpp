@@ -3,6 +3,7 @@
 #include <unordered_set>
 
 #include "vasSAT/NNFFormula.hpp"
+#include "vasSAT/Node.hpp"
 
 namespace vasSAT {
 unsigned NNFFormula::addNode(std::optional<unsigned> externalID,
