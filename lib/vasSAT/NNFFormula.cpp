@@ -9,6 +9,34 @@
 namespace {
 using namespace vasSAT;
 
+class PrettyPrinter : public AbstractNodeDispatcher {
+  std::ostream &m_os;
+
+public:
+  PrettyPrinter(std::ostream &os) : m_os(os){};
+  void Dispatch(AndNode &N) override {
+    m_os << "(";
+    N.getLeft().value()->Accept(*this);
+    m_os << ".";
+    N.getRight().value()->Accept(*this);
+    m_os << ")";
+  }
+  void Dispatch(OrNode &N) override {
+    m_os << "(";
+    N.getLeft().value()->Accept(*this);
+    m_os << "+";
+    N.getRight().value()->Accept(*this);
+    m_os << ")";
+  }
+  void Dispatch(NotNode &N) override {
+    m_os << "(";
+    m_os << "-";
+    N.getRight().value()->Accept(*this);
+    m_os << ")";
+  }
+  void Dispatch(LitNode &N) override { m_os << N.getExternalID(); }
+};
+
 class HeightDispatcher : public AbstractNodeDispatcher {
 private:
   std::unordered_map<unsigned, std::vector<NodeRef>> &m_heightMap;
@@ -204,45 +232,10 @@ void NNFFormula::printExternalToInternal(std::ostream &os) const {
   os.flush();
 }
 
-std::string NNFFormula::inorder(const NodeRef &node) const {
-  auto type = node->getType();
-  std::string str = "";
-
-  bool binaryNode =
-      type == NodeType::AND || type == NodeType::OR || type == NodeType::NOT;
-
-  if (binaryNode) str = "(" + str;
-  if (node->getLeft().has_value()) str += inorder(node->getLeft().value());
-
-  switch (type) {
-  case NodeType::LIT: {
-    const auto &litNode = std::dynamic_pointer_cast<LitNode>(node);
-    str.append(std::to_string(litNode->getExternalID()));
-    break;
-  }
-  case NodeType::AND:
-    str.append(".");
-    break;
-  case NodeType::OR:
-    str.append("+");
-    break;
-  case NodeType::NOT:
-    str.append("-");
-    break;
-  default:
-    assert(0 && "Attempted to print unknown node type!");
-  }
-
-  if (node->getRight().has_value()) str += inorder(node->getRight().value());
-
-  if (binaryNode) str = str + ")";
-
-  return str;
-}
-
 void NNFFormula::print(std::ostream &os) const {
-  std::string str = inorder(m_rootNode);
-  os << str << "0" << std::endl;
+  PrettyPrinter pp(os);
+  m_rootNode->Accept(pp);
+  os << " 0" << std::endl;
 }
 
 } // namespace vasSAT
