@@ -9,6 +9,26 @@
 namespace {
 using namespace vasSAT;
 
+class IDMapPrinter : public AbstractNodeDispatcher {
+private:
+  std::ostream &m_os;
+
+public:
+  IDMapPrinter(std::ostream &os) : m_os(os){};
+  void Dispatch(AndNode &N) override {
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(OrNode &N) override {
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(NotNode &N) override { N.getRight().value()->Accept(*this); }
+  void Dispatch(LitNode &N) override {
+    m_os << N.getExternalID() << " ---> " << N.getID() << "\n";
+  }
+};
+
 class PrettyPrinter : public AbstractNodeDispatcher {
   std::ostream &m_os;
 
@@ -230,23 +250,8 @@ void NNFFormula::populateHeightMap() {
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
-  std::stack<NodeRef> toVisit;
-
-  toVisit.push(m_rootNode);
-  while (!toVisit.empty()) {
-    auto &ref = toVisit.top();
-
-    if (ref->getType() == NodeType::LIT) {
-      const auto &litNode = std::dynamic_pointer_cast<LitNode>(ref);
-      int externalID = litNode->getExternalID();
-      int internalID = litNode->getID();
-
-      os << externalID << " ---> " << internalID << "\n";
-    }
-
-    if (ref->getLeft().has_value()) { toVisit.push(ref->getLeft().value()); }
-    if (ref->getRight().has_value()) { toVisit.push(ref->getRight().value()); }
-  }
+  IDMapPrinter idmp(os);
+  m_rootNode->Accept(idmp);
   os.flush();
 }
 
