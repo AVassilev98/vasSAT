@@ -55,6 +55,21 @@ bool unknownSymbols(const std::string &str) {
   return false;
 }
 
+bool multipleEndTags(const std::string &str) {
+  // valid symbols : '-', '.', '+', '(', ')', unsigned integers
+
+  bool seenTag = false;
+
+  for (char c : str) {
+    if (c == '0') {
+      if (seenTag) return true;
+      seenTag = true;
+    }
+  }
+
+  return false;
+}
+
 } // namespace
 
 namespace vasSAT {
@@ -136,6 +151,12 @@ NNFRef Parser::parseNNfFile(const std::string &path) const {
     if (unknownSymbols(nnfLine)) {
       std::cerr << "Unable to read equation due to unknown symbols detected\n";
       throw new std::invalid_argument("unknown symbols");
+    }
+
+    if (multipleEndTags(nnfLine)) {
+      std::cerr << "Multiple '0' characters. This character is reserved as an "
+                   "end tag\n";
+      throw new std::invalid_argument("multiple end tags");
     }
 
     parseNNFString(nnfLine, endIdx, ret);
