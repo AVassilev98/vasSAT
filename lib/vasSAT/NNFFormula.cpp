@@ -10,7 +10,7 @@ namespace vasSAT {
 
 void NNFFormula::checkNoCycles() const {
   std::unordered_set<NodeRef> visited;
-  std::stack<const NodeRef &> toVisit;
+  std::stack<NodeRef> toVisit;
 
   toVisit.push(m_rootNode);
 
@@ -27,7 +27,7 @@ void NNFFormula::checkNoCycles() const {
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
-  std::stack<const NodeRef &> toVisit;
+  std::stack<NodeRef> toVisit;
 
   toVisit.push(m_rootNode);
   while (!toVisit.empty()) {
@@ -56,10 +56,11 @@ void NNFFormula::inorder(const NodeRef &node, std::string &str) const {
   if (binaryNode) str = "(" + str + ")";
 
   switch (type) {
-  case NodeType::LIT:
+  case NodeType::LIT: {
     const auto &litNode = std::dynamic_pointer_cast<LitNode>(node);
     str.append(std::to_string(litNode->getExternalID()));
     break;
+  }
   case NodeType::AND:
     str.append(" . ");
     break;
@@ -112,9 +113,6 @@ void CNFDispatcher::Dispatch(AndNode &N) {
   m_formula.addClause({curID, -leftID, -rightID});
   m_formula.addClause({-curID, leftID});
   m_formula.addClause({-curID, rightID});
-
-  N.getLeft().value()->Accept(*this);
-  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(OrNode &N) {
   if (m_visited.find(N.getData()) != m_visited.end()) return;
@@ -127,9 +125,6 @@ void CNFDispatcher::Dispatch(OrNode &N) {
   m_formula.addClause({-curID, leftID, rightID});
   m_formula.addClause({curID, -leftID});
   m_formula.addClause({curID, -rightID});
-
-  N.getLeft().value()->Accept(*this);
-  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(NotNode &N) {
   if (m_visited.find(N.getData()) != m_visited.end()) return;
@@ -142,8 +137,6 @@ void CNFDispatcher::Dispatch(NotNode &N) {
   m_formula.addClause({curID, -leftID, -rightID});
   m_formula.addClause({-curID, leftID});
   m_formula.addClause({-curID, rightID});
-
-  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(LitNode &N) { return; }
 
