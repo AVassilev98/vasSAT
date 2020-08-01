@@ -145,6 +145,7 @@ NNFRef Parser::parseNNfFile(const std::string &path) const {
     throw new invalid_argument("Poorly formed NNF equation!");
 
   ret->populateHeightMap();
+  ret->mergeNodes();
 
   return ret;
 }

@@ -15,7 +15,8 @@ class NNFFormula {
 private:
   friend class Parser;
   NodeRef m_rootNode = nullptr;
-  std::unordered_map<int, NodeRef> m_heightMap;
+  // maps height to a vector of Nodes at that height
+  std::unordered_map<unsigned, std::vector<NodeRef>> m_heightMap;
 
   NNFFormula() = default;
 
@@ -23,6 +24,7 @@ private:
 
   std::string inorder(const NodeRef &node) const;
   void populateHeightMap();
+  void mergeNodes();
 
 public:
   void printExternalToInternal(std::ostream &os) const;

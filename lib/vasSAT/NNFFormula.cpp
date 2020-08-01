@@ -209,6 +209,24 @@ bool NNFFormula::isValid() const {
 void NNFFormula::populateHeightMap() {
   HeightDispatcher hd(m_heightMap);
   m_rootNode->Accept(hd);
+
+  switch (m_rootNode->getType()) {
+  case NodeType::AND:
+  case NodeType::OR:
+    m_rootNode->setHeight(
+        1 + std::max(m_rootNode->getLeft().value()->getHeight(),
+                     m_rootNode->getRight().value()->getHeight()));
+
+    break;
+  case NodeType::NOT:
+    m_rootNode->setHeight(1 + m_rootNode->getRight().value()->getHeight());
+    break;
+  case NodeType::LIT:
+    m_rootNode->setHeight(0);
+    break;
+  default:
+    break;
+  }
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
@@ -237,5 +255,7 @@ void NNFFormula::print(std::ostream &os) const {
   m_rootNode->Accept(pp);
   os << " 0" << std::endl;
 }
+
+void NNFFormula::mergeNodes() {}
 
 } // namespace vasSAT
