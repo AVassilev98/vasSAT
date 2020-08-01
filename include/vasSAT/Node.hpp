@@ -75,8 +75,8 @@ public:
   }
 
   void Accept(AbstractNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
     this->getLeft().value()->Accept(dispatcher);
+    dispatcher.Dispatch(*this);
     this->getRight().value()->Accept(dispatcher);
   }
 };
@@ -96,8 +96,8 @@ public:
   }
 
   void Accept(AbstractNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
     this->getLeft().value()->Accept(dispatcher);
+    dispatcher.Dispatch(*this);
     this->getRight().value()->Accept(dispatcher);
   }
 };
