@@ -30,10 +30,6 @@ public:
   virtual void Dispatch(LitNode &N) = 0;
 };
 
-class InOrderNodeDispatcher : public AbstractNodeDispatcher {};
-class PreOrderNodeDispatcher : public AbstractNodeDispatcher {};
-class PostOrderNodeDispatcher : public AbstractNodeDispatcher {};
-
 struct NodeData {
   unsigned id;
   unsigned height;
@@ -58,9 +54,7 @@ public:
   virtual void insertLeft(const NodeRef N) = 0;
   virtual void insertRight(const NodeRef N) = 0;
 
-  virtual void Accept(InOrderNodeDispatcher &dispatcher) = 0;
-  virtual void Accept(PreOrderNodeDispatcher &dispatcher) = 0;
-  virtual void Accept(PostOrderNodeDispatcher &dispatcher) = 0;
+  virtual void Accept(AbstractNodeDispatcher &dispatcher) = 0;
 
   void merge(const NodeRef &N) { m_data = N->getData(); }
 
@@ -83,21 +77,7 @@ public:
     if (m_data->height <= N->getHeight()) m_data->height += N->getHeight() + 1;
   }
 
-  void Accept(InOrderNodeDispatcher &dispatcher) override {
-    this->getLeft().value()->Accept(dispatcher);
-    dispatcher.Dispatch(*this);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PreOrderNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
-    this->getLeft().value()->Accept(dispatcher);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PostOrderNodeDispatcher &dispatcher) override {
-    this->getLeft().value()->Accept(dispatcher);
-    this->getRight().value()->Accept(dispatcher);
+  void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
   }
 };
@@ -116,21 +96,7 @@ public:
     if (m_data->height <= N->getHeight()) m_data->height += N->getHeight() + 1;
   }
 
-  void Accept(InOrderNodeDispatcher &dispatcher) override {
-    this->getLeft().value()->Accept(dispatcher);
-    dispatcher.Dispatch(*this);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PreOrderNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
-    this->getLeft().value()->Accept(dispatcher);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PostOrderNodeDispatcher &dispatcher) override {
-    this->getLeft().value()->Accept(dispatcher);
-    this->getRight().value()->Accept(dispatcher);
+  void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
   }
 };
@@ -148,18 +114,7 @@ public:
     if (m_data->height <= N->getHeight()) m_data->height += N->getHeight() + 1;
   }
 
-  void Accept(InOrderNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PreOrderNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
-    this->getRight().value()->Accept(dispatcher);
-  }
-
-  void Accept(PostOrderNodeDispatcher &dispatcher) override {
-    this->getRight().value()->Accept(dispatcher);
+  void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
   }
 };
@@ -181,16 +136,8 @@ public:
     assert(0 && "Should not be inserting right on a LitNode!");
   }
 
-  void Accept(InOrderNodeDispatcher &dispatcher) override {
+  void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
-  }
-
-  void Accept(PreOrderNodeDispatcher &dispatcher) override {
-    dispatcher.Dispatch(*this);
-  }
-
-  void Accept(PostOrderNodeDispatcher &dispatcher) override {
-    this->getRight().value()->Accept(dispatcher);
   }
 
   bool isEqual(const NodeRef &N) override {

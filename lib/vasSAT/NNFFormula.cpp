@@ -88,7 +88,7 @@ void NNFFormula::print(std::ostream &os) const {
   os << str << "0" << std::endl;
 }
 
-class CNFDispatcher : public PreOrderNodeDispatcher {
+class CNFDispatcher : public AbstractNodeDispatcher {
 private:
   CNFFormula &m_formula;
 
@@ -98,46 +98,50 @@ private:
 
 public:
   CNFDispatcher(CNFFormula &F) : m_formula(F) {}
-  void Dispatch(AndNode &N) override;
-  void Dispatch(OrNode &N) override;
-  void Dispatch(NotNode &N) override;
-  void Dispatch(LitNode &N) override;
+
+  void Dispatch(AndNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int leftID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({curID, -leftID, -rightID});
+    m_formula.addClause({-curID, leftID});
+    m_formula.addClause({-curID, rightID});
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(OrNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int leftID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({-curID, leftID, rightID});
+    m_formula.addClause({curID, -leftID});
+    m_formula.addClause({curID, -rightID});
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(NotNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({-curID, -rightID});
+    m_formula.addClause({curID, rightID});
+
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(LitNode &N) override { return; }
 };
-
-void CNFDispatcher::Dispatch(AndNode &N) {
-  if (m_visited.find(N.getData()) != m_visited.end()) return;
-  m_visited.insert(N.getData());
-
-  int curID = (int)N.getID();
-  int leftID = (int)N.getLeft().value()->getID();
-  int rightID = (int)N.getLeft().value()->getID();
-
-  m_formula.addClause({curID, -leftID, -rightID});
-  m_formula.addClause({-curID, leftID});
-  m_formula.addClause({-curID, rightID});
-}
-void CNFDispatcher::Dispatch(OrNode &N) {
-  if (m_visited.find(N.getData()) != m_visited.end()) return;
-  m_visited.insert(N.getData());
-
-  int curID = (int)N.getID();
-  int leftID = (int)N.getLeft().value()->getID();
-  int rightID = (int)N.getLeft().value()->getID();
-
-  m_formula.addClause({-curID, leftID, rightID});
-  m_formula.addClause({curID, -leftID});
-  m_formula.addClause({curID, -rightID});
-}
-void CNFDispatcher::Dispatch(NotNode &N) {
-  if (m_visited.find(N.getData()) != m_visited.end()) return;
-  m_visited.insert(N.getData());
-
-  int curID = (int)N.getID();
-  int rightID = (int)N.getLeft().value()->getID();
-
-  m_formula.addClause({-curID, -rightID});
-  m_formula.addClause({curID, rightID});
-}
-void CNFDispatcher::Dispatch(LitNode &N) { return; }
 
 } // namespace vasSAT
