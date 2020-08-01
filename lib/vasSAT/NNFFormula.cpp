@@ -59,11 +59,10 @@ public:
 
 class HeightDispatcher : public AbstractNodeDispatcher {
 private:
-  std::unordered_map<unsigned, std::vector<NodeRef>> &m_heightMap;
+  std::unordered_map<unsigned, std::list<NodeRef>> &m_heightMap;
 
 public:
-  HeightDispatcher(
-      std::unordered_map<unsigned, std::vector<NodeRef>> &height_map)
+  HeightDispatcher(std::unordered_map<unsigned, std::list<NodeRef>> &height_map)
       : m_heightMap(height_map) {}
 
   void Dispatch(AndNode &N) override {
@@ -77,10 +76,10 @@ public:
 
     N.setHeight(height);
     if (m_heightMap.find(left->getHeight()) == m_heightMap.end()) {
-      m_heightMap.insert({left->getHeight(), std::vector<NodeRef>()});
+      m_heightMap.insert({left->getHeight(), std::list<NodeRef>()});
     }
     if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
-      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+      m_heightMap.insert({right->getHeight(), std::list<NodeRef>()});
     }
     m_heightMap.find(left->getHeight())->second.push_back(left);
     m_heightMap.find(right->getHeight())->second.push_back(right);
@@ -96,10 +95,10 @@ public:
 
     N.setHeight(height);
     if (m_heightMap.find(left->getHeight()) == m_heightMap.end()) {
-      m_heightMap.insert({left->getHeight(), std::vector<NodeRef>()});
+      m_heightMap.insert({left->getHeight(), std::list<NodeRef>()});
     }
     if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
-      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+      m_heightMap.insert({right->getHeight(), std::list<NodeRef>()});
     }
     m_heightMap.find(left->getHeight())->second.push_back(left);
     m_heightMap.find(right->getHeight())->second.push_back(right);
@@ -113,7 +112,7 @@ public:
 
     N.setHeight(height);
     if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
-      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+      m_heightMap.insert({right->getHeight(), std::list<NodeRef>()});
     }
     m_heightMap.find(right->getHeight())->second.push_back(right);
   }
@@ -261,6 +260,24 @@ void NNFFormula::print(std::ostream &os) const {
   os << " 0" << std::endl;
 }
 
-void NNFFormula::mergeNodes() {}
+void NNFFormula::mergeNodes() {
+
+  for (int i = 0; i < m_rootNode->getHeight(); i++) {
+    auto &list = m_heightMap.find(i)->second;
+    while (!list.empty()) {
+      auto i = *list.begin();
+      list.erase(list.begin());
+      auto j = list.begin();
+      while (j != list.end()) {
+        if (i->isEqual(*j)) {
+          i->merge(*j);
+          list.erase(j++);
+        } else {
+          j++;
+        }
+      }
+    }
+  }
+}
 
 } // namespace vasSAT

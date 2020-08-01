@@ -59,7 +59,13 @@ public:
 
   void merge(const NodeRef &N) { m_data = N->getData(); }
 
-  virtual bool isEqual(const NodeRef &N) { return m_data->id == N->getID(); }
+  virtual bool isEqual(const NodeRef &N) {
+    return getType() == N->getType() &&
+           m_data->nodeLeft.value()->getData() ==
+               N->getLeft().value()->getData() &&
+           m_data->nodeRight.value()->getData() ==
+               N->getRight().value()->getData();
+  }
 
   virtual ~Node() = default;
 };
@@ -117,6 +123,10 @@ public:
 
   void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
+  }
+  virtual bool isEqual(const NodeRef &N) override {
+    return getType() == N->getType() && m_data->nodeRight.value()->getData() ==
+                                            N->getRight().value()->getData();
   }
 };
 

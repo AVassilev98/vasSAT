@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <list>
 #include <optional>
 #include <unordered_map>
 
@@ -16,7 +17,7 @@ private:
   friend class Parser;
   NodeRef m_rootNode = nullptr;
   // maps height to a vector of Nodes at that height
-  std::unordered_map<unsigned, std::vector<NodeRef>> m_heightMap;
+  std::unordered_map<unsigned, std::list<NodeRef>> m_heightMap;
 
   NNFFormula() = default;
 
