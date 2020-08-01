@@ -161,7 +161,6 @@ void Parser::parseNNFString(const std::string &str, unsigned endIdx,
   // precedence from greatest to least
   std::unordered_map<char, unsigned> precedenceMap = {
       {'-', 2}, {'.', 1}, {'+', 0}};
-  bool a = precedenceMap.find('+') == precedenceMap.end();
 
   std::stack<std::string> PN;
   std::stack<char> ops;
@@ -187,9 +186,6 @@ void Parser::parseNNFString(const std::string &str, unsigned endIdx,
         }
         ops.pop();
       } else {
-
-        bool here = !ops.empty() &&
-                    precedenceMap.find(ops.top()) != precedenceMap.end();
         while (!ops.empty() &&
                (precedenceMap.find(ops.top()) != precedenceMap.end()) &&
                precedenceMap.find(ops.top())->second >

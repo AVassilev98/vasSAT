@@ -31,7 +31,7 @@ set(CMAKE_CXX_EXTENSIONS NO)
 set(CMAKE_BUILD_TYPE Debug) 
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
-  set(CMAKE_CXX_FLAGS "-O0 -fno-limit-debug-info")
+  set(CMAKE_CXX_FLAGS "-O0 -Werror -Wunused-variable -fno-limit-debug-info")
 endif()
 
 add_definitions(-Wno-redeclared-class-member)
