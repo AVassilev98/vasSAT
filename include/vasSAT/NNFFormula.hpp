@@ -4,31 +4,24 @@
 #include <optional>
 #include <unordered_map>
 
+#include "vasSAT/Node.hpp"
+
 namespace vasSAT {
 
 class Parser;
 enum class NodeType;
-
-struct NNFData {
-  NodeType type;
-  std::optional<unsigned> externalID;
-  std::optional<unsigned> leftChild;
-  std::optional<unsigned> rightChild;
-};
 
 class NNFFormula {
 private:
   NNFFormula() = default;
 
   // each node will be inserted by its internal ID
-  std::unordered_map<unsigned, NNFData> m_nodes;
-  unsigned m_id = 0;
-  unsigned m_rootID = 0;
+  NodeRef m_rootNode;
 
   void checkNoCycles() const;
   void checkTerminates() const;
 
-  void inorder(unsigned elem, std::string &str) const;
+  void inorder(const NodeRef &node, std::string &str) const;
 
   // returns the ID of the node you add
   unsigned addNode(std::optional<unsigned> externalID, NodeType type);

@@ -33,8 +33,8 @@ public:
 struct NodeData {
   unsigned id;
   unsigned height;
-  NodeRef nodeLeft;
-  NodeRef nodeRight;
+  std::optional<NodeRef> nodeLeft;
+  std::optional<NodeRef> nodeRight;
 };
 
 class Node {
@@ -45,12 +45,12 @@ protected:
 
 public:
   Node(int id, int depth);
-  inline unsigned getHeight() { return m_data->height; }
-  inline unsigned getID() { return m_data->id; }
-  inline NodeRef getLeft() { return m_data->nodeLeft; }
-  inline NodeRef getRight() { return m_data->nodeRight; }
+  inline unsigned getHeight() const { return m_data->height; }
+  inline unsigned getID() const { return m_data->id; }
+  inline std::optional<NodeRef> const getLeft() { return m_data->nodeLeft; }
+  inline std::optional<NodeRef> const getRight() { return m_data->nodeRight; }
 
-  inline NodeDataRef getData() { return m_data; };
+  inline NodeDataRef getData() { return m_data; }
 
   inline virtual NodeType getType() const = 0;
   virtual void insertLeft(const NodeRef N) = 0;
@@ -113,7 +113,15 @@ public:
 };
 
 class LitNode : public Node {
+private:
+  int m_externalID = 0;
+
 public:
+  LitNode(int id, int depth, int externalID)
+      : Node(id, depth), m_externalID(externalID) {}
+
+  int getExternalID() const { return m_externalID; }
+
   inline NodeType getType() const override { return NodeType::LIT; }
   void insertLeft(const NodeRef N) override {
     assert(0 && "Should not be inserting left on a LitNode!");

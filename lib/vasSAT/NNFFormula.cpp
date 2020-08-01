@@ -7,70 +7,58 @@
 #include "vasSAT/Node.hpp"
 
 namespace vasSAT {
-unsigned NNFFormula::addNode(std::optional<unsigned> externalID,
-                             NodeType type) {
-  m_nodes.insert({m_id, {type, externalID}});
-  ++m_id;
-  return m_id - 1;
-}
-
-void NNFFormula::setLeft(unsigned curID, unsigned leftId) {
-  assert(m_nodes.find(curID) != m_nodes.end() && "Current node doesn't exist!");
-  assert(!m_nodes.at(curID).leftChild.has_value() &&
-         "Already has a left child!");
-
-  m_nodes.at(curID).leftChild = leftId;
-}
-
-void NNFFormula::setRight(unsigned curID, unsigned rightID) {
-  assert(m_nodes.find(curID) != m_nodes.end() && "Current node doesn't exist!");
-  assert(!m_nodes.at(curID).rightChild.has_value() &&
-         "Already has a right child!");
-
-  m_nodes.at(curID).rightChild = rightID;
-}
 
 void NNFFormula::checkNoCycles() const {
-  std::unordered_set<unsigned> visited;
-  std::stack<unsigned> toVisit;
+  std::unordered_set<NodeRef> visited;
+  std::stack<const NodeRef &> toVisit;
 
-  toVisit.push(m_rootID);
+  toVisit.push(m_rootNode);
 
   while (!toVisit.empty()) {
-    unsigned id = toVisit.top();
-    assert(visited.find(id) == visited.end() && "Cycle Detected!");
+    auto &node = toVisit.top();
+    assert(visited.find(node) == visited.end() && "Cycle Detected!");
 
-    visited.insert(id);
+    visited.insert(node);
     toVisit.pop();
 
-    if (m_nodes.find(id)->second.leftChild.has_value())
-      toVisit.push(m_nodes.find(id)->second.leftChild.value());
-    if (m_nodes.find(id)->second.rightChild.has_value())
-      toVisit.push(m_nodes.find(id)->second.rightChild.value());
+    if (node->getLeft().has_value()) toVisit.push(node->getLeft().value());
+    if (node->getRight().has_value()) toVisit.push(node->getRight().value());
   }
-
-  assert(visited.size() == m_nodes.size() &&
-         "Nodes exist outside of main tree!\n");
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
-  for (auto &elem : m_nodes) {
-    if (elem.second.externalID.has_value())
-      os << elem.second.externalID.value() << " ---> " << elem.first << "\n";
+  std::stack<const NodeRef &> toVisit;
+
+  toVisit.push(m_rootNode);
+  while (!toVisit.empty()) {
+    auto &ref = toVisit.top();
+
+    if (ref->getType() == NodeType::LIT) {
+      const auto &litNode = std::dynamic_pointer_cast<LitNode>(ref);
+      int externalID = litNode->getExternalID();
+      int internalID = litNode->getID();
+
+      os << externalID << " ---> " << internalID << "\n";
+    }
+
+    if (ref->getLeft().has_value()) { toVisit.push(ref->getLeft().value()); }
+    if (ref->getRight().has_value()) { toVisit.push(ref->getRight().value()); }
   }
   os.flush();
 }
 
-void NNFFormula::inorder(unsigned elem, std::string &str) const {
-  auto &data = m_nodes.find(elem)->second;
-  bool binaryNode = data.type == NodeType::AND || data.type == NodeType::OR;
+void NNFFormula::inorder(const NodeRef &node, std::string &str) const {
+  auto type = node->getType();
 
-  if (data.leftChild.has_value()) { inorder(data.leftChild.value(), str); }
+  bool binaryNode = type == NodeType::AND || type == NodeType::OR;
+
+  if (node->getLeft().has_value()) { inorder(node->getLeft().value(), str); }
   if (binaryNode) str = "(" + str + ")";
 
-  switch (data.type) {
+  switch (type) {
   case NodeType::LIT:
-    str.append(std::to_string(data.externalID.value()));
+    const auto &litNode = std::dynamic_pointer_cast<LitNode>(node);
+    str.append(std::to_string(litNode->getExternalID()));
     break;
   case NodeType::AND:
     str.append(" . ");
@@ -85,14 +73,14 @@ void NNFFormula::inorder(unsigned elem, std::string &str) const {
     assert(0 && "Attempted to print unknown node type!");
   }
 
-  if (data.rightChild.has_value()) { inorder(data.rightChild.value(), str); }
+  if (node->getRight().has_value()) { inorder(node->getRight().value(), str); }
 
   if (binaryNode) str = "(" + str + ")";
 }
 
 void NNFFormula::print(std::ostream &os) const {
   std::string str;
-  inorder(m_rootID, str);
+  inorder(m_rootNode, str);
 
   os << str << std::endl;
 }
@@ -118,44 +106,44 @@ void CNFDispatcher::Dispatch(AndNode &N) {
   m_visited.insert(N.getData());
 
   int curID = (int)N.getID();
-  int leftID = (int)N.getLeft()->getID();
-  int rightID = (int)N.getLeft()->getID();
+  int leftID = (int)N.getLeft().value()->getID();
+  int rightID = (int)N.getLeft().value()->getID();
 
   m_formula.addClause({curID, -leftID, -rightID});
   m_formula.addClause({-curID, leftID});
   m_formula.addClause({-curID, rightID});
 
-  N.getLeft()->Accept(*this);
-  N.getRight()->Accept(*this);
+  N.getLeft().value()->Accept(*this);
+  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(OrNode &N) {
   if (m_visited.find(N.getData()) != m_visited.end()) return;
   m_visited.insert(N.getData());
 
   int curID = (int)N.getID();
-  int leftID = (int)N.getLeft()->getID();
-  int rightID = (int)N.getLeft()->getID();
+  int leftID = (int)N.getLeft().value()->getID();
+  int rightID = (int)N.getLeft().value()->getID();
 
   m_formula.addClause({-curID, leftID, rightID});
   m_formula.addClause({curID, -leftID});
   m_formula.addClause({curID, -rightID});
 
-  N.getLeft()->Accept(*this);
-  N.getRight()->Accept(*this);
+  N.getLeft().value()->Accept(*this);
+  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(NotNode &N) {
   if (m_visited.find(N.getData()) != m_visited.end()) return;
   m_visited.insert(N.getData());
 
   int curID = (int)N.getID();
-  int leftID = (int)N.getLeft()->getID();
-  int rightID = (int)N.getLeft()->getID();
+  int leftID = (int)N.getLeft().value()->getID();
+  int rightID = (int)N.getLeft().value()->getID();
 
   m_formula.addClause({curID, -leftID, -rightID});
   m_formula.addClause({-curID, leftID});
   m_formula.addClause({-curID, rightID});
 
-  N.getRight()->Accept(*this);
+  N.getRight().value()->Accept(*this);
 }
 void CNFDispatcher::Dispatch(LitNode &N) { return; }
 
