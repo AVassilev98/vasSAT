@@ -57,6 +57,8 @@ public:
   virtual void Accept(AbstractNodeDispatcher &dispatcher) = 0;
   void merge(const NodeRef &N) { m_data = N->getData(); }
 
+  virtual bool isEqual(const NodeRef &N) { return m_data->id == N->getID(); }
+
   virtual ~Node() = default;
 };
 
@@ -140,6 +142,14 @@ public:
 
   void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
+  }
+
+  bool isEqual(const NodeRef &N) override {
+    if (N->getType() != NodeType::LIT)
+      assert(0 && "Can't compare lit to non-lit!\n");
+
+    return m_externalID ==
+           std::dynamic_pointer_cast<LitNode>(N)->getExternalID();
   }
 };
 } // namespace vasSAT
