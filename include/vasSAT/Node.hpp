@@ -44,7 +44,7 @@ protected:
   NodeDataRef m_data;
 
 public:
-  Node(int id, int depth);
+  Node(int id);
   inline unsigned getHeight() const { return m_data->height; }
   inline unsigned getID() const { return m_data->id; }
   inline std::optional<NodeRef> const getLeft() { return m_data->nodeLeft; }
@@ -122,8 +122,7 @@ private:
   int m_externalID = 0;
 
 public:
-  LitNode(int id, int depth, int externalID)
-      : Node(id, depth), m_externalID(externalID) {}
+  LitNode(int id, int externalID) : Node(id), m_externalID(externalID) {}
 
   int getExternalID() const { return m_externalID; }
 
