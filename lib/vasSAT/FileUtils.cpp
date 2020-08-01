@@ -78,14 +78,17 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
       for (unsigned i = 0; i < cnfLine.size(); ++i) {
         if (cnfLine[i] == ' ') continue;
         if (cnfLine[i] == '0' && i == cnfLine.size() - 1) continue;
-        if (cnfLine[i] == '0' && i != cnfLine.size() - 1)
-          std::cout << "Variables must start at one!: " << path << std::endl;
+        if (cnfLine[i] == '0' && i != cnfLine.size() - 1) {
+          std::cerr << "Variables must start at 1: " << path << std::endl;
+          throw new std::invalid_argument("invalid end tag");
+        }
         if (i == 0 || cnfLine[i - 1] == ' ') {
           int var = atoi(&cnfLine.c_str()[i]);
 
-          if (var == 0)
-            std::cout << "Unkown symbol found!: " << path << std::endl;
-          else
+          if (var == 0) {
+            std::cerr << "Unkown symbol found: " << path << std::endl;
+            throw new std::invalid_argument("unknown symbol");
+          } else
             clause.push_back(var);
         }
       }
@@ -96,8 +99,8 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
     return formula;
 
   } else {
-    std::cout << "Could not read file: " << path << std::endl;
-    return formula;
+    std::cerr << "Could not open file: " << path << std::endl;
+    throw new std::invalid_argument("Could not open file");
   }
 }
 
@@ -121,28 +124,31 @@ NNFRef Parser::parseNNfFile(const std::string &path) const {
       endIdx--;
     }
     if (endIdx == 0) {
-      std::cout << "No end tag detected. Insert '0' at end of nnf equation\n";
-      return ret;
+      std::cerr << "No end tag detected. Insert '0' at end of nnf equation\n";
+      throw new std::invalid_argument("No end tag detected");
     }
 
     if (!validParenths(nnfLine)) {
-      std::cout << "Unable to read equation due to invalid parentheses\n";
-      return ret;
+      std::cerr << "Unable to read equation due to invalid parentheses\n";
+      throw new std::invalid_argument("invalid parenths");
     }
 
     if (unknownSymbols(nnfLine)) {
-      std::cout << "Unable to read equation due to unknown symbols detected\n";
-      return ret;
+      std::cerr << "Unable to read equation due to unknown symbols detected\n";
+      throw new std::invalid_argument("unknown symbols");
     }
 
     parseNNFString(nnfLine, endIdx, ret);
 
   } else {
-    std::cout << "Could not open file: " << path << std::endl;
+    std::cerr << "Could not open file: " << path << std::endl;
+    throw new std::invalid_argument("Could not open file");
   }
 
-  if (!ret->isValid())
-    throw new invalid_argument("Poorly formed NNF equation!");
+  if (!ret->isValid()) {
+    std::cerr << "Poorly formed NNF equation\n";
+    throw new invalid_argument("Not NNF");
+  }
 
   ret->populateHeightMap();
   ret->mergeNodes();

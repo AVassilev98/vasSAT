@@ -49,7 +49,8 @@ void CNFFormula::printToFile(std::string str) const {
   ofstream ofs(str);
   if (ofs.is_open()) print(ofs);
   else {
-    std::cout << "Unable to open destination file: " << str << endl;
+    std::cerr << "Unable to open destination file: " << str << endl;
+    throw new invalid_argument("Could not open file");
   }
 }
 } // namespace vasSAT
