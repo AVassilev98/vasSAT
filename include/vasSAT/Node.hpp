@@ -53,6 +53,7 @@ public:
   inline virtual NodeType getType() const = 0;
   virtual void insertLeft(const NodeRef N) = 0;
   virtual void insertRight(const NodeRef N) = 0;
+  void setHeight(unsigned h) { m_data->height = h; }
 
   virtual void Accept(AbstractNodeDispatcher &dispatcher) = 0;
 

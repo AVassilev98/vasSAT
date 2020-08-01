@@ -22,6 +22,7 @@ private:
   bool isValid() const;
 
   std::string inorder(const NodeRef &node) const;
+  void populateHeightMap();
 
 public:
   void printExternalToInternal(std::ostream &os) const;

@@ -141,6 +141,11 @@ NNFRef Parser::parseNNfFile(const std::string &path) const {
     std::cout << "Could not open file: " << path << std::endl;
   }
 
+  if (!ret->isValid())
+    throw new invalid_argument("Poorly formed NNF equation!");
+
+  ret->populateHeightMap();
+
   return ret;
 }
 

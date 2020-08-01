@@ -9,6 +9,69 @@
 namespace {
 using namespace vasSAT;
 
+class HeightDispatcher : public AbstractNodeDispatcher {
+private:
+  std::unordered_map<unsigned, std::vector<NodeRef>> &m_heightMap;
+
+public:
+  HeightDispatcher(
+      std::unordered_map<unsigned, std::vector<NodeRef>> &height_map)
+      : m_heightMap(height_map) {}
+
+  void Dispatch(AndNode &N) override {
+    auto left = N.getLeft().value();
+    auto right = N.getRight().value();
+
+    left->Accept(*this);
+    right->Accept(*this);
+
+    unsigned height = std::max(left->getHeight(), right->getHeight()) + 1;
+
+    N.setHeight(height);
+    if (m_heightMap.find(left->getHeight()) == m_heightMap.end()) {
+      m_heightMap.insert({left->getHeight(), std::vector<NodeRef>()});
+    }
+    if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
+      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+    }
+    m_heightMap.find(left->getHeight())->second.push_back(left);
+    m_heightMap.find(right->getHeight())->second.push_back(right);
+  }
+  void Dispatch(OrNode &N) override {
+    auto left = N.getLeft().value();
+    auto right = N.getRight().value();
+
+    left->Accept(*this);
+    right->Accept(*this);
+
+    unsigned height = std::max(left->getHeight(), right->getHeight()) + 1;
+
+    N.setHeight(height);
+    if (m_heightMap.find(left->getHeight()) == m_heightMap.end()) {
+      m_heightMap.insert({left->getHeight(), std::vector<NodeRef>()});
+    }
+    if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
+      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+    }
+    m_heightMap.find(left->getHeight())->second.push_back(left);
+    m_heightMap.find(right->getHeight())->second.push_back(right);
+  }
+  void Dispatch(NotNode &N) override {
+    auto right = N.getRight().value();
+
+    right->Accept(*this);
+
+    unsigned height = right->getHeight() + 1;
+
+    N.setHeight(height);
+    if (m_heightMap.find(right->getHeight()) == m_heightMap.end()) {
+      m_heightMap.insert({right->getHeight(), std::vector<NodeRef>()});
+    }
+    m_heightMap.find(right->getHeight())->second.push_back(right);
+  }
+  void Dispatch(LitNode &N) override { N.setHeight(0); }
+};
+
 class CNFDispatcher : public AbstractNodeDispatcher {
 private:
   CNFFormula &m_formula;
@@ -113,6 +176,11 @@ bool NNFFormula::isValid() const {
   ValidityDispatcher vd;
   m_rootNode->Accept(vd);
   return vd.isValid();
+}
+
+void NNFFormula::populateHeightMap() {
+  HeightDispatcher hd(m_heightMap);
+  m_rootNode->Accept(hd);
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
