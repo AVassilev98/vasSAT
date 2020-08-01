@@ -51,7 +51,8 @@ std::string NNFFormula::inorder(const NodeRef &node) const {
   auto type = node->getType();
   std::string str = "";
 
-  bool binaryNode = type == NodeType::AND || type == NodeType::OR;
+  bool binaryNode =
+      type == NodeType::AND || type == NodeType::OR || type == NodeType::NOT;
 
   if (binaryNode) str = "(" + str;
   if (node->getLeft().has_value()) str += inorder(node->getLeft().value());
@@ -63,13 +64,13 @@ std::string NNFFormula::inorder(const NodeRef &node) const {
     break;
   }
   case NodeType::AND:
-    str.append(" . ");
+    str.append(".");
     break;
   case NodeType::OR:
-    str.append(" + ");
+    str.append("+");
     break;
   case NodeType::NOT:
-    str.append(" -");
+    str.append("-");
     break;
   default:
     assert(0 && "Attempted to print unknown node type!");
@@ -84,7 +85,7 @@ std::string NNFFormula::inorder(const NodeRef &node) const {
 
 void NNFFormula::print(std::ostream &os) const {
   std::string str = inorder(m_rootNode);
-  os << str << std::endl;
+  os << str << "0" << std::endl;
 }
 
 class CNFDispatcher : public AbstractNodeDispatcher {
