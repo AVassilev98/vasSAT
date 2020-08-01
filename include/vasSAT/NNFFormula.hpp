@@ -23,7 +23,7 @@ private:
   void checkNoCycles() const;
   void checkTerminates() const;
 
-  void inorder(const NodeRef &node, std::string &str) const;
+  std::string inorder(const NodeRef &node) const;
 
 public:
   void printExternalToInternal(std::ostream &os) const;

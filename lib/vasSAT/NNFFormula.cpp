@@ -47,13 +47,14 @@ void NNFFormula::printExternalToInternal(std::ostream &os) const {
   os.flush();
 }
 
-void NNFFormula::inorder(const NodeRef &node, std::string &str) const {
+std::string NNFFormula::inorder(const NodeRef &node) const {
   auto type = node->getType();
+  std::string str = "";
 
   bool binaryNode = type == NodeType::AND || type == NodeType::OR;
 
-  if (node->getLeft().has_value()) { inorder(node->getLeft().value(), str); }
-  if (binaryNode) str = "(" + str + ")";
+  if (binaryNode) str = "(" + str;
+  if (node->getLeft().has_value()) str += inorder(node->getLeft().value());
 
   switch (type) {
   case NodeType::LIT: {
@@ -74,15 +75,15 @@ void NNFFormula::inorder(const NodeRef &node, std::string &str) const {
     assert(0 && "Attempted to print unknown node type!");
   }
 
-  if (node->getRight().has_value()) { inorder(node->getRight().value(), str); }
+  if (node->getRight().has_value()) str += inorder(node->getRight().value());
 
-  if (binaryNode) str = "(" + str + ")";
+  if (binaryNode) str = str + ")";
+
+  return str;
 }
 
 void NNFFormula::print(std::ostream &os) const {
-  std::string str;
-  inorder(m_rootNode, str);
-
+  std::string str = inorder(m_rootNode);
   os << str << std::endl;
 }
 
