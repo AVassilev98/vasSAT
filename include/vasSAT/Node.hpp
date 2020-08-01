@@ -39,12 +39,10 @@ struct NodeData {
 
 class Node {
 protected:
-  static unsigned m_nodeID;
-
   NodeDataRef m_data;
 
 public:
-  Node(int id);
+  Node(int id) : m_data(std::make_shared<NodeData>()) { m_data->id = id; }
   inline unsigned getHeight() const { return m_data->height; }
   inline unsigned getID() const { return m_data->id; }
   inline std::optional<NodeRef> const getLeft() { return m_data->nodeLeft; }
@@ -59,11 +57,13 @@ public:
   virtual void Accept(AbstractNodeDispatcher &dispatcher) = 0;
   void merge(const NodeRef &N) { m_data = N->getData(); }
 
-  virtual ~Node();
+  virtual ~Node() = default;
 };
 
 class AndNode : public Node {
 public:
+  AndNode(int id) : Node(id) {}
+
   inline NodeType getType() const override { return NodeType::AND; }
   void insertLeft(const NodeRef N) override {
     m_data->nodeLeft = N;
@@ -83,6 +83,8 @@ public:
 
 class OrNode : public Node {
 public:
+  OrNode(int id) : Node(id) {}
+
   inline NodeType getType() const override { return NodeType::OR; }
   void insertLeft(const NodeRef N) override {
     m_data->nodeLeft = N;
@@ -102,6 +104,8 @@ public:
 
 class NotNode : public Node {
 public:
+  NotNode(int id) : Node(id) {}
+
   inline NodeType getType() const override { return NodeType::NOT; }
   void insertLeft(const NodeRef N) override {
     assert(0 && "Should not be inserting left on a NotNode!");
