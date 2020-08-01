@@ -109,26 +109,6 @@ public:
 
 namespace vasSAT {
 
-bool NNFFormula::noCycles() const {
-  std::unordered_set<NodeRef> visited;
-  std::stack<NodeRef> toVisit;
-
-  toVisit.push(m_rootNode);
-
-  while (!toVisit.empty()) {
-    auto &node = toVisit.top();
-    return false;
-
-    visited.insert(node);
-    toVisit.pop();
-
-    if (node->getLeft().has_value()) toVisit.push(node->getLeft().value());
-    if (node->getRight().has_value()) toVisit.push(node->getRight().value());
-  }
-
-  return true;
-}
-
 bool NNFFormula::isValid() const {
   ValidityDispatcher vd;
   m_rootNode->Accept(vd);

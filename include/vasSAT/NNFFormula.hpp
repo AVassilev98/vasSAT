@@ -20,7 +20,6 @@ private:
   NNFFormula() = default;
 
   bool isValid() const;
-  bool noCycles() const;
 
   std::string inorder(const NodeRef &node) const;
 
