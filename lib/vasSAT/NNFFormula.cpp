@@ -6,9 +6,110 @@
 #include "vasSAT/NNFFormula.hpp"
 #include "vasSAT/Node.hpp"
 
+namespace {
+using namespace vasSAT;
+
+class CNFDispatcher : public AbstractNodeDispatcher {
+private:
+  CNFFormula &m_formula;
+
+  // because the nodes are merged it is possible to visit the same NodeData more
+  // than once, in which case we don't want to add duplicate clauses to our CNF
+  std::unordered_set<NodeDataRef> m_visited;
+
+public:
+  CNFDispatcher(CNFFormula &F) : m_formula(F) {}
+
+  void Dispatch(AndNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int leftID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({curID, -leftID, -rightID});
+    m_formula.addClause({-curID, leftID});
+    m_formula.addClause({-curID, rightID});
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(OrNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int leftID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({-curID, leftID, rightID});
+    m_formula.addClause({curID, -leftID});
+    m_formula.addClause({curID, -rightID});
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(NotNode &N) override {
+    if (m_visited.find(N.getData()) != m_visited.end()) return;
+    m_visited.insert(N.getData());
+
+    int curID = (int)N.getID();
+    int rightID = (int)N.getLeft().value()->getID();
+
+    m_formula.addClause({-curID, -rightID});
+    m_formula.addClause({curID, rightID});
+
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(LitNode &N) override { return; }
+};
+
+class ValidityDispatcher : public AbstractNodeDispatcher {
+private:
+  bool m_isValid = true;
+
+public:
+  ValidityDispatcher() = default;
+  bool isValid() const { return m_isValid; }
+
+  void Dispatch(AndNode &N) override {
+    if (!m_isValid) return;
+
+    if (!N.getLeft().has_value() || !N.getLeft().has_value()) {
+      m_isValid = false;
+      return;
+    }
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(OrNode &N) override {
+    if (!m_isValid) return;
+
+    if (!N.getLeft().has_value() || !N.getLeft().has_value()) {
+      m_isValid = false;
+      return;
+    }
+
+    N.getLeft().value()->Accept(*this);
+    N.getRight().value()->Accept(*this);
+  }
+  void Dispatch(NotNode &N) override {
+    if (!m_isValid) return;
+
+    if (!N.getRight().has_value()) m_isValid = false;
+    else if (N.getRight().value()->getType() != NodeType::LIT)
+      m_isValid = false;
+    return;
+  }
+  void Dispatch(LitNode &N) override { return; }
+};
+} // namespace
+
 namespace vasSAT {
 
-void NNFFormula::checkNoCycles() const {
+bool NNFFormula::noCycles() const {
   std::unordered_set<NodeRef> visited;
   std::stack<NodeRef> toVisit;
 
@@ -16,7 +117,7 @@ void NNFFormula::checkNoCycles() const {
 
   while (!toVisit.empty()) {
     auto &node = toVisit.top();
-    assert(visited.find(node) == visited.end() && "Cycle Detected!");
+    return false;
 
     visited.insert(node);
     toVisit.pop();
@@ -24,6 +125,14 @@ void NNFFormula::checkNoCycles() const {
     if (node->getLeft().has_value()) toVisit.push(node->getLeft().value());
     if (node->getRight().has_value()) toVisit.push(node->getRight().value());
   }
+
+  return true;
+}
+
+bool NNFFormula::isValid() const {
+  ValidityDispatcher vd;
+  m_rootNode->Accept(vd);
+  return vd.isValid();
 }
 
 void NNFFormula::printExternalToInternal(std::ostream &os) const {
@@ -87,61 +196,5 @@ void NNFFormula::print(std::ostream &os) const {
   std::string str = inorder(m_rootNode);
   os << str << "0" << std::endl;
 }
-
-class CNFDispatcher : public AbstractNodeDispatcher {
-private:
-  CNFFormula &m_formula;
-
-  // because the nodes are merged it is possible to visit the same NodeData more
-  // than once, in which case we don't want to add duplicate clauses to our CNF
-  std::unordered_set<NodeDataRef> m_visited;
-
-public:
-  CNFDispatcher(CNFFormula &F) : m_formula(F) {}
-
-  void Dispatch(AndNode &N) override {
-    if (m_visited.find(N.getData()) != m_visited.end()) return;
-    m_visited.insert(N.getData());
-
-    int curID = (int)N.getID();
-    int leftID = (int)N.getLeft().value()->getID();
-    int rightID = (int)N.getLeft().value()->getID();
-
-    m_formula.addClause({curID, -leftID, -rightID});
-    m_formula.addClause({-curID, leftID});
-    m_formula.addClause({-curID, rightID});
-
-    N.getLeft().value()->Accept(*this);
-    N.getRight().value()->Accept(*this);
-  }
-  void Dispatch(OrNode &N) override {
-    if (m_visited.find(N.getData()) != m_visited.end()) return;
-    m_visited.insert(N.getData());
-
-    int curID = (int)N.getID();
-    int leftID = (int)N.getLeft().value()->getID();
-    int rightID = (int)N.getLeft().value()->getID();
-
-    m_formula.addClause({-curID, leftID, rightID});
-    m_formula.addClause({curID, -leftID});
-    m_formula.addClause({curID, -rightID});
-
-    N.getLeft().value()->Accept(*this);
-    N.getRight().value()->Accept(*this);
-  }
-  void Dispatch(NotNode &N) override {
-    if (m_visited.find(N.getData()) != m_visited.end()) return;
-    m_visited.insert(N.getData());
-
-    int curID = (int)N.getID();
-    int rightID = (int)N.getLeft().value()->getID();
-
-    m_formula.addClause({-curID, -rightID});
-    m_formula.addClause({curID, rightID});
-
-    N.getRight().value()->Accept(*this);
-  }
-  void Dispatch(LitNode &N) override { return; }
-};
 
 } // namespace vasSAT

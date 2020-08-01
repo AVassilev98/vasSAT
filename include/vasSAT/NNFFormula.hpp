@@ -15,13 +15,12 @@ class NNFFormula {
 private:
   friend class Parser;
   NodeRef m_rootNode = nullptr;
+  std::unordered_map<int, NodeRef> m_heightMap;
 
   NNFFormula() = default;
 
-  // each node will be inserted by its internal ID
-
-  void checkNoCycles() const;
-  void checkTerminates() const;
+  bool isValid() const;
+  bool noCycles() const;
 
   std::string inorder(const NodeRef &node) const;
 
