@@ -131,12 +131,10 @@ void CNFDispatcher::Dispatch(NotNode &N) {
   m_visited.insert(N.getData());
 
   int curID = (int)N.getID();
-  int leftID = (int)N.getLeft().value()->getID();
   int rightID = (int)N.getLeft().value()->getID();
 
-  m_formula.addClause({curID, -leftID, -rightID});
-  m_formula.addClause({-curID, leftID});
-  m_formula.addClause({-curID, rightID});
+  m_formula.addClause({-curID, -rightID});
+  m_formula.addClause({curID, rightID});
 }
 void CNFDispatcher::Dispatch(LitNode &N) { return; }
 
