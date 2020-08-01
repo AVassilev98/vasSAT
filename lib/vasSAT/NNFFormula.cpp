@@ -88,7 +88,7 @@ void NNFFormula::print(std::ostream &os) const {
   os << str << "0" << std::endl;
 }
 
-class CNFDispatcher : public AbstractNodeDispatcher {
+class CNFDispatcher : public PreOrderNodeDispatcher {
 private:
   CNFFormula &m_formula;
 
