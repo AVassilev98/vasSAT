@@ -121,14 +121,14 @@ public:
 
 class CNFDispatcher : public AbstractNodeDispatcher {
 private:
-  CNFFormula &m_formula;
+  std::unique_ptr<CNFFormula> &m_formula;
 
   // because the nodes are merged it is possible to visit the same NodeData more
   // than once, in which case we don't want to add duplicate clauses to our CNF
   std::unordered_set<NodeDataRef> m_visited;
 
 public:
-  CNFDispatcher(CNFFormula &F) : m_formula(F) {}
+  CNFDispatcher(std::unique_ptr<CNFFormula> &F) : m_formula(F) {}
 
   void Dispatch(AndNode &N) override {
     if (m_visited.find(N.getData()) != m_visited.end()) return;
@@ -136,11 +136,11 @@ public:
 
     int curID = (int)N.getID();
     int leftID = (int)N.getLeft().value()->getID();
-    int rightID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getRight().value()->getID();
 
-    m_formula.addClause({curID, -leftID, -rightID});
-    m_formula.addClause({-curID, leftID});
-    m_formula.addClause({-curID, rightID});
+    m_formula->addClause({curID, -leftID, -rightID});
+    m_formula->addClause({-curID, leftID});
+    m_formula->addClause({-curID, rightID});
 
     N.getLeft().value()->Accept(*this);
     N.getRight().value()->Accept(*this);
@@ -151,11 +151,11 @@ public:
 
     int curID = (int)N.getID();
     int leftID = (int)N.getLeft().value()->getID();
-    int rightID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getRight().value()->getID();
 
-    m_formula.addClause({-curID, leftID, rightID});
-    m_formula.addClause({curID, -leftID});
-    m_formula.addClause({curID, -rightID});
+    m_formula->addClause({-curID, leftID, rightID});
+    m_formula->addClause({curID, -leftID});
+    m_formula->addClause({curID, -rightID});
 
     N.getLeft().value()->Accept(*this);
     N.getRight().value()->Accept(*this);
@@ -165,10 +165,10 @@ public:
     m_visited.insert(N.getData());
 
     int curID = (int)N.getID();
-    int rightID = (int)N.getLeft().value()->getID();
+    int rightID = (int)N.getRight().value()->getID();
 
-    m_formula.addClause({-curID, -rightID});
-    m_formula.addClause({curID, rightID});
+    m_formula->addClause({-curID, -rightID});
+    m_formula->addClause({curID, rightID});
 
     N.getRight().value()->Accept(*this);
   }
@@ -278,6 +278,11 @@ void NNFFormula::mergeNodes() {
       }
     }
   }
+}
+
+void NNFFormula::buildCNF(std::unique_ptr<CNFFormula> &F) {
+  CNFDispatcher cd(F);
+  m_rootNode->Accept(cd);
 }
 
 } // namespace vasSAT

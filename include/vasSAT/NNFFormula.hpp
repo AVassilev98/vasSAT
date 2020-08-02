@@ -28,6 +28,7 @@ private:
   void mergeNodes();
 
 public:
+  void buildCNF(std::unique_ptr<CNFFormula> &F);
   void printExternalToInternal(std::ostream &os) const;
   void print(std::ostream &os) const;
 };
