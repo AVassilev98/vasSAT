@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(vasSAT LANGUAGES CXX VERSION 0.0.1)
 
-find_package(Catch2 REQUIRED)
+# find_package(Catch2 REQUIRED)
 
 if(NOT WIN32)
   string(ASCII 27 Esc)
@@ -20,9 +20,9 @@ function(message)
   endif()
 endfunction()
 
-if(NOT Catch2_FOUND)
-    message(FATAL_ERROR "Catch2 Package is Missing!")
-endif()
+# if(NOT Catch2_FOUND)
+#     message(FATAL_ERROR "Catch2 Package is Missing!")
+# endif()
 
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to conform to")
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
