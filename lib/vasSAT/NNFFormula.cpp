@@ -269,7 +269,7 @@ void NNFFormula::mergeNodes() {
       list.erase(list.begin());
       auto j = list.begin();
       while (j != list.end()) {
-        if (i->isEqual(*j)) {
+        if (i->isIsomorphic(*j)) {
           i->merge(*j);
           list.erase(j++);
         } else {

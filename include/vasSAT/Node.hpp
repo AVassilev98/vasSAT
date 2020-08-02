@@ -59,12 +59,16 @@ public:
 
   void merge(const NodeRef &N) { m_data = N->getData(); }
 
-  virtual bool isEqual(const NodeRef &N) {
-    return getType() == N->getType() &&
-           m_data->nodeLeft.value()->getData() ==
-               N->getLeft().value()->getData() &&
-           m_data->nodeRight.value()->getData() ==
-               N->getRight().value()->getData();
+  virtual bool isIsomorphic(const NodeRef &N) {
+    if (getType() != N->getType()) return false;
+    auto left = m_data->nodeLeft.value()->getData();
+    auto leftOther = N->getLeft().value()->getData();
+
+    auto right = m_data->nodeRight.value()->getData();
+    auto rightOther = N->getRight().value()->getData();
+
+    return (left == leftOther && right == rightOther) ||
+           (left == rightOther && right == leftOther);
   }
 
   virtual ~Node() = default;
@@ -124,9 +128,13 @@ public:
   void Accept(AbstractNodeDispatcher &dispatcher) override {
     dispatcher.Dispatch(*this);
   }
-  virtual bool isEqual(const NodeRef &N) override {
-    return getType() == N->getType() && m_data->nodeRight.value()->getData() ==
-                                            N->getRight().value()->getData();
+
+  virtual bool isIsomorphic(const NodeRef &N) override {
+    if (getType() != N->getType()) return false;
+    auto right = m_data->nodeRight.value()->getData();
+    auto rightOther = N->getRight().value()->getData();
+
+    return (right == rightOther);
   }
 };
 
@@ -151,7 +159,7 @@ public:
     dispatcher.Dispatch(*this);
   }
 
-  bool isEqual(const NodeRef &N) override {
+  bool isIsomorphic(const NodeRef &N) override {
     if (N->getType() != NodeType::LIT)
       assert(0 && "Can't compare lit to non-lit!\n");
 
