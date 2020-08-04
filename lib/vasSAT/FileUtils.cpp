@@ -87,7 +87,9 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
     while (!ifs.eof()) {
       getline(ifs, cnfLine);
       // skip initial comments and p line
-      if (cnfLine[0] == 'c' || cnfLine[0] == 'p') continue;
+      if (cnfLine[0] == 'c' || cnfLine[0] == 'p' || cnfLine[0] == '0' ||
+          cnfLine[0] == '%')
+        continue;
 
       std::vector<int> clause;
       for (unsigned i = 0; i < cnfLine.size(); ++i) {
@@ -99,7 +101,9 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
         }
         if (i == 0 || cnfLine[i - 1] == ' ') {
           int var = atoi(&cnfLine.c_str()[i]);
-
+          while (cnfLine[i] != ' ') {
+            ++i;
+          }
           if (var == 0) {
             std::cerr << "Unkown symbol found: " << path << std::endl;
             throw new std::invalid_argument("unknown symbol");
