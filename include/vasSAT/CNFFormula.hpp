@@ -6,13 +6,21 @@
 #include <vector>
 
 namespace vasSAT {
+using Clause = std::vector<unsigned>;
 
 class CNFFormula {
+  enum class Assignment { Empty, True, False };
+  using AssignmentMap = std::unordered_map<unsigned, Assignment>;
+
   unsigned m_id = 0;
-  std::vector<std::vector<unsigned>> m_clauses;
+  std::vector<Clause> m_clauses;
   std::unordered_map<unsigned, unsigned> m_vars;
+  AssignmentMap m_asgnMap;
+
+  void initAsgnMap();
 
 public:
+  friend class Solver;
   friend class Parser;
 
   CNFFormula() = default;
@@ -27,8 +35,10 @@ public:
   bool hasVar(int var) const;
   bool hasLit(int lit) const;
 
+  void printAssignment(std::ostream &os) const;
+  void printAssignmentToFile(std::string &str) const;
   void print(std::ostream &os) const;
-  void printToFile(std::string) const;
+  void printToFile(std::string &str) const;
 };
 
 } // namespace vasSAT
