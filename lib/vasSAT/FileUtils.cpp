@@ -87,6 +87,7 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
     while (!ifs.eof()) {
       getline(ifs, cnfLine);
       // skip initial comments and p line
+      if (cnfLine.empty()) continue;
       if (cnfLine[0] == 'c' || cnfLine[0] == 'p' || cnfLine[0] == '0' ||
           cnfLine[0] == '%')
         continue;
