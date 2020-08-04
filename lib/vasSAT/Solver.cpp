@@ -124,6 +124,7 @@ bool Solver::DPLL(VarToClauseMap &vtcMap,
         // top-level conflict
         if (decisions.size() == 1) return false;
 
+        pair.second = CNFFormula::Assignment::Empty;
         decisions.pop();
         it = decisions.top().it;
       }
