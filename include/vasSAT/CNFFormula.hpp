@@ -17,8 +17,6 @@ class CNFFormula {
   std::unordered_map<unsigned, unsigned> m_vars;
   AssignmentMap m_asgnMap;
 
-  void initAsgnMap();
-
 public:
   friend class Solver;
   friend class Parser;

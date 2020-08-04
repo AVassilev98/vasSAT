@@ -14,6 +14,7 @@ void CNFFormula::addClause(const std::vector<int> &lits) {
   for (int lit : lits) {
 
     if (m_vars.find(abs(lit)) == m_vars.end()) {
+      m_asgnMap.insert({m_id, Assignment::Empty});
       m_vars.insert({abs(lit), m_id});
       ++m_id;
     }
@@ -80,9 +81,4 @@ void CNFFormula::printAssignmentToFile(std::string &str) const {
   }
 }
 
-void CNFFormula::initAsgnMap() {
-  for (auto var : m_vars) {
-    m_asgnMap.insert({var.second, Assignment::Empty});
-  }
-}
 } // namespace vasSAT

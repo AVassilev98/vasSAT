@@ -110,8 +110,6 @@ CNFRef Parser::parseCNFFile(const std::string &path) const {
 
       formula->addClause(clause);
     }
-
-    formula->initAsgnMap();
     return formula;
 
   } else {
