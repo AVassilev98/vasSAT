@@ -28,10 +28,11 @@ set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to conform to")
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
-set(CMAKE_BUILD_TYPE Debug) 
-
 if(CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
   set(CMAKE_CXX_FLAGS "-O0 -Werror -Wunused-variable -fno-limit-debug-info")
+endif()
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  set(CMAKE_CXX_FLAGS "-O3")
 endif()
 
 add_definitions(-Wno-redeclared-class-member)
