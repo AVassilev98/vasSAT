@@ -1,0 +1,11 @@
+../build/run/bin/vasSAT \
+-n  NNF/fuzzy_testcase_0.nnf \
+-n  NNF/fuzzy_testcase_1.nnf \
+-n  NNF/fuzzy_testcase_2.nnf \
+-n  NNF/fuzzy_testcase_3.nnf \
+-n  NNF/fuzzy_testcase_4.nnf \
+-n  NNF/fuzzy_testcase_5.nnf \
+-n  NNF/fuzzy_testcase_6.nnf \
+-n  NNF/fuzzy_testcase_7.nnf \
+-n  NNF/fuzzy_testcase_8.nnf \
+-n  NNF/fuzzy_testcase_9.nnf \
