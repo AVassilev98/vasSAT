@@ -28,7 +28,6 @@ void CNFFormula::addClause(const std::vector<int> &lits) {
 }
 
 void CNFFormula::print(std::ostream &os) const {
-  auto externalID = [](unsigned i) { return i + 1; };
 
   // print DIMACS Header
   os << "p cnf " << m_vars.size() << " " << m_clauses.size() << "\n";
@@ -36,7 +35,11 @@ void CNFFormula::print(std::ostream &os) const {
   // print clauses
   for (auto &clause : m_clauses) {
     for (int var : clause) {
-      os << externalID(var) << " ";
+      for (auto &pair : m_vars) {
+        if (pair.second * 2 == var) os << pair.first << " ";
+        else if (pair.second * 2 + 1 == var)
+          os << "-" << pair.first << " ";
+      }
     }
     os << "0\n";
   }
