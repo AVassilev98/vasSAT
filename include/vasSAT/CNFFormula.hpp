@@ -23,17 +23,7 @@ public:
   friend class Solver;
   friend class Parser;
 
-  CNFFormula() = default;
-  ~CNFFormula() = default;
-  CNFFormula(const CNFFormula &rhs) = delete;
-  CNFFormula(CNFFormula &&rhs) = delete;
-  CNFFormula &operator=(const CNFFormula &rhs) = delete;
-  bool operator==(const CNFFormula &rhs) const = delete;
-
   void addClause(const std::vector<int> &lits);
-  void addVar(int var);
-  bool hasVar(int var) const;
-  bool hasLit(int lit) const;
 
   void printAssignment(std::ostream &os) const;
   void printAssignmentToFile(std::string &str) const;
