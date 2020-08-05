@@ -10,7 +10,7 @@ using Clause = std::vector<unsigned>;
 
 class CNFFormula {
   enum class Assignment { Empty, True, False };
-  using AssignmentMap = std::unordered_map<unsigned, Assignment>;
+  using AssignmentMap = std::vector<Assignment>;
 
   unsigned m_id = 0;
   std::vector<Clause> m_clauses;

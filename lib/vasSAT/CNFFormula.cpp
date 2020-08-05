@@ -14,7 +14,7 @@ void CNFFormula::addClause(const std::vector<int> &lits) {
   for (int lit : lits) {
 
     if (m_vars.find(abs(lit)) == m_vars.end()) {
-      m_asgnMap.insert({m_id, Assignment::Empty});
+      m_asgnMap.push_back(Assignment::Empty);
       m_vars.insert({abs(lit), m_id});
       ++m_id;
     }
@@ -56,7 +56,7 @@ void CNFFormula::printToFile(std::string &str) const {
 
 void CNFFormula::printAssignment(std::ostream &os) const {
   for (auto &var : m_vars) {
-    auto asgn = m_asgnMap.find(var.second)->second;
+    auto asgn = m_asgnMap[var.second];
     std::string asgnStr = "";
     switch (asgn) {
     case Assignment::True:

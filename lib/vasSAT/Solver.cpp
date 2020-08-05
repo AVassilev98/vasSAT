@@ -4,7 +4,6 @@
 namespace vasSAT {
 struct Solver::DecisionData {
   unsigned var;
-  CNFFormula::AssignmentMap::iterator it;
   std::stack<unsigned> props;
 };
 
@@ -34,11 +33,6 @@ bool Solver::DPLL(VarToClauseMap &vtcMap,
                   std::unique_ptr<CNFFormula> &F) const {
   bool conflict = false;
 
-  std::stack<unsigned> vars;
-  for (auto &pair : F->m_asgnMap) {
-    vars.push(pair.first);
-  }
-
   // each decision has a list of consequenting clause propagations and a node
   // in the decision tree
   std::stack<DecisionData> decisions;
@@ -60,7 +54,7 @@ bool Solver::DPLL(VarToClauseMap &vtcMap,
         for (int i = 0; i < clause->size(); i++) {
           unsigned lit = (*clause)[i];
           bool negation = lit % 2;
-          auto asgn = F->m_asgnMap.find(lit / 2)->second;
+          auto asgn = F->m_asgnMap[lit / 2];
 
           if (asgn == CNFFormula::Assignment::Empty) {
             numEmpty++;
@@ -84,9 +78,9 @@ bool Solver::DPLL(VarToClauseMap &vtcMap,
         }
         unsigned var = (*clause)[emptyIdx] / 2;
         if ((*clause)[emptyIdx] % 2) {
-          F->m_asgnMap.find(var)->second = CNFFormula::Assignment::False;
+          F->m_asgnMap[var] = CNFFormula::Assignment::False;
         } else {
-          F->m_asgnMap.find(var)->second = CNFFormula::Assignment::True;
+          F->m_asgnMap[var] = CNFFormula::Assignment::True;
         }
         dd.props.push(var);
         toProp.push(var);
@@ -94,39 +88,38 @@ bool Solver::DPLL(VarToClauseMap &vtcMap,
     }
   };
 
-  for (auto it = F->m_asgnMap.begin(); it != F->m_asgnMap.end();) {
+  for (unsigned i = 0; i < F->m_asgnMap.size();) {
 
     if (!conflict) {
-      auto &pair = *it;
+      auto &asgn = F->m_asgnMap[i];
 
-      if (pair.second == CNFFormula::Assignment::Empty) {
-        pair.second = CNFFormula::Assignment::False;
-        decisions.push({pair.first, it, std::stack<unsigned>()});
+      if (asgn == CNFFormula::Assignment::Empty) {
+        F->m_asgnMap[i] = CNFFormula::Assignment::False;
+        decisions.push({i, std::stack<unsigned>()});
         unitProp(decisions.top());
       }
-      ++it;
+      ++i;
     } else {
 
       auto &data = decisions.top();
-      auto &pair = *data.it;
+      auto idx = data.var;
       while (!data.props.empty()) {
-        F->m_asgnMap.find(data.props.top())->second =
-            CNFFormula::Assignment::Empty;
+        F->m_asgnMap[data.props.top()] = CNFFormula::Assignment::Empty;
         data.props.pop();
       }
 
-      if (pair.second == CNFFormula::Assignment::False) {
-        pair.second = CNFFormula::Assignment::True;
-        it = data.it;
+      if (F->m_asgnMap[idx] == CNFFormula::Assignment::False) {
+        F->m_asgnMap[idx] = CNFFormula::Assignment::True;
+        i = data.var;
         conflict = false;
         unitProp(decisions.top());
       } else {
         // top-level conflict
         if (decisions.size() == 1) return false;
 
-        pair.second = CNFFormula::Assignment::Empty;
+        F->m_asgnMap[idx] = CNFFormula::Assignment::Empty;
         decisions.pop();
-        it = decisions.top().it;
+        i = decisions.top().var;
       }
     }
   }
